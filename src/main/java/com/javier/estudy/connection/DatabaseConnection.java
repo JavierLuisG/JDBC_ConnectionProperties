@@ -9,11 +9,18 @@ import java.util.Properties;
 
 public class DatabaseConnection {
     
-    Connection conn; // instancia que permite conexion a la base de datos
-    Properties properties = new Properties(); // Clase que permite traer las propiedades de la databaseConnection.properties
-    InputStream stream; // Clase que permite leer los datos del archivo que se indique
+    private static DatabaseConnection instance = null; // Para generar el patron Singleton
     
-    String url;
+    private Connection conn; // instancia que permite conexion a la base de datos
+    private Properties properties = new Properties(); // Clase que permite traer las propiedades de la databaseConnection.properties
+    private InputStream stream; // Clase que permite leer los datos del archivo que se indique
+    
+    private String url;
+    
+    /* Para implementar correctamente el patrón Singleton en una clase, se debe hacer el constructor de la clase privado para prevenir la creación de nuevas instancias utilizando el operador `new`. 
+       Luego, se crea un método estático `getInstance()` que cree y devuelva la única instancia permitida de la clase si aún no existe, y simplemente devuelva la instancia existente en lugar de crear una nueva si ya ha sido creada. */
+    private DatabaseConnection() {
+    }
     
     /**
      * @return Connection: permite la conexión a la base de datos 
@@ -45,6 +52,17 @@ public class DatabaseConnection {
             url = "jdbc:mysql://" + hostname + ":" + port + "/" + database;
         } catch (IOException ex) {
             System.out.println("Error, " + ex);
+        }
+    }
+    
+    /**
+     * @return la única instacia de la conexión, crea una nueva si no está creada o devuelve la ya creada
+     */
+    public static DatabaseConnection getInstance(){
+        if (instance == null) {
+            return instance = new DatabaseConnection();
+        } else {
+            return instance;
         }
     }
 }
