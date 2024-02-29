@@ -31,11 +31,23 @@ public class DatabaseConnection {
         String password = properties.getProperty("password");
         try {
             conn = DriverManager.getConnection(url, user, password);
-            System.out.println("Conexion exitosa");
         } catch (SQLException ex) {
             System.out.println("Error, " + ex);
         }
         return conn;
+    }
+    
+    /**
+     * Método que permite cerrar la conexión a la base de datos
+     */
+    public void closeConnection() {
+        if (conn != null) {
+            try {
+                conn.close();
+            } catch (SQLException ex) {
+                System.err.println("No se pudo cerrar la conexión, " + ex);
+            }
+        }        
     }
     
     /**
