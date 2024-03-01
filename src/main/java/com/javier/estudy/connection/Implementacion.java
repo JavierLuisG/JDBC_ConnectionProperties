@@ -12,10 +12,9 @@ public class Implementacion {
     private ResultSet rs;
 
     // nombramiento metodo ejecutadorConsulta
-    public void ejecutadorConsulta() {
+    public void ejecutadorInsercion() {
 
         String insertQuery = "INSERT INTO usuario(nombre, edad, telefono, correo, idioma) VALUES (?,?,?,?,?)";
-        String selectQuery = "SELECT * FROM usuario";
 
         conn = DatabaseConnection.getInstance().getConnection();
 
@@ -66,7 +65,6 @@ public class Implementacion {
 
             conn.commit(); // Se confirma en caso que todo salga bien
 
-            rs = statement.executeQuery(selectQuery); // Recibir los datos de la base de datos por medio del ResultSet
             // Imprimir los datos recuperados
             while (rs.next()) {
                 System.out.println(rs.getInt("id") + ": "
@@ -86,6 +84,49 @@ public class Implementacion {
             } catch (SQLException ex) {
                 System.err.println("Error en el rollback, " + ex);
             }
+            System.err.println("No se pudo conectar a la base de datos, " + e);
+        } finally {
+            if (statement != null) { // Cerrar el PreparedStatement
+                try {
+                    statement.close();
+                } catch (SQLException ex) {
+                    System.err.println("No se pudo cerrar el Prepared Statement");
+                }
+            }
+            DatabaseConnection.getInstance().closeConnection(); // Cerrar la conexion
+        }
+    }
+    public void ejecutadorConsulta() {
+        conn = DatabaseConnection.getInstance().getConnection();
+        String selectQuery = "SELECT * FROM usuario";
+        try {
+            /**
+             * Los dos siguientes parametros @ResultSet.TYPE_SCROLL_INSENSITIVE, @ResultSet.CONCUR_READ_ONLY 
+             * junto con rs.afterLast() y con rs.previous(), permiten recorrer los datos de abajo hacia arriba
+             */
+            statement = conn.prepareStatement(selectQuery,ResultSet.TYPE_SCROLL_INSENSITIVE, 
+                    ResultSet.CONCUR_READ_ONLY);
+            rs = statement.executeQuery(); // Recibir los datos de la base de datos por medio del ResultSet
+            // Imprimir los datos recuperados
+            rs.afterLast();
+            while (rs.previous()) { // no solo es con rs.previous sino debe ir tambien rs.afterLast()
+                System.out.println(rs.getInt("id") + ": "
+                        + rs.getString("nombre") + "\t"
+                        + rs.getInt("edad") + "\t"
+                        + rs.getString("telefono") + "\t"
+                        + rs.getString("correo") + "\t"
+                        + rs.getString("idioma"));
+            }
+            // la forma normal de recorrer de arriba hacia abajo
+            while (rs.next()) {
+                System.out.println(rs.getInt("id") + ": "
+                        + rs.getString("nombre") + "\t"
+                        + rs.getInt("edad") + "\t"
+                        + rs.getString("telefono") + "\t"
+                        + rs.getString("correo") + "\t"
+                        + rs.getString("idioma"));
+            }
+        } catch (SQLException e) {
             System.err.println("No se pudo conectar a la base de datos, " + e);
         } finally {
             if (statement != null) { // Cerrar el PreparedStatement
